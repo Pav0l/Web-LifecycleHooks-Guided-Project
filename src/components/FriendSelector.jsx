@@ -29,7 +29,14 @@ export default class FriendSelector extends React.Component {
         }
         {
           this.state.currentFriendId &&
-          <Friend friend={this.getCurrentFriend()} />
+          <Friend
+          // Keys can be used to remount a component, when they change
+          // This means you dont need the componentDidUpdate method, because
+          // this component will be re-constructed entirely with 'constructor run'
+          // and componentDidMount
+            key={this.state.currentFriendId}
+            friend={this.getCurrentFriend()}
+          />
         }
         <br />
         <button onClick={() => this.setCurrentFriendId(null)}>
