@@ -24,16 +24,80 @@ export function fakeCheckIfOnlineAjax(id) {
 // 3- refactor to use a key combining friend.id and a random id
 export default class Friend extends React.Component {
   constructor(props) {
+    /*
+    WHAT CAN YOU GENERALY DO INSIDE THE CONSTRUCTOR:
+    Initialize state
+    Initialize variables
+    Bind methods
+
+    DON'T DO - setState!
+    */
+
     console.log('constructor of Friend runs!');
 
     super(props);
     this.state = {
-      isOnline: false,
+      isOnline: props.isOnline,
     };
   }
 
+  componentDidMount() {
+    console.log('componentDid-MOUNT run and called setState');
+    fakeCheckIfOnlineAjax(this.props.friend.id)
+      .then(data => this.setState({ isOnline: data }));
+  }
+
+  componentDidUpdate(prevState) {
+    /*
+    Inside componentDidUpdate you CAN NOT run UNCONDITIONAL setState,
+    because it creates infinite loop (didUpdate - render - didUpdate -...)
+
+    fakeCheckIfOnlineAjax(this.props.friend.id)
+      .then(data => this.setState({ isOnline: data }));
+
+    THIS is what would you get in CONSOLE:
+      constructor of Friend runs! 				            Friend.jsx:36:4
+      Render run 						                          Friend.jsx:86:4
+      componentDid-MOUNT run and called setState 		  Friend.jsx:45:4
+      Render run 						                          Friend.jsx:86:4
+      componentDid-UPDATE run and called setState 		Friend.jsx:63:4
+      Render run 						                          Friend.jsx:86:4
+      componentDid-UPDATE run and called setState 		Friend.jsx:63:4
+      Render run 						                          Friend.jsx:86:4
+      componentDid-UPDATE run and called setState 		Friend.jsx:63:4
+      Render run 						                          Friend.jsx:86:4
+      componentDid-UPDATE run and called setState 		Friend.jsx:63:4
+      Render run
+
+    That's why you need  to add a condition to check previous State.
+    componentDidUpdate takes prevState as an argument
+
+    */
+    const hasFriendChanged = prevState.friend.id !== this.props.friend.id;
+    console.log('componentDid-UPDATE run and called setState');
+
+    if (hasFriendChanged) {
+      fakeCheckIfOnlineAjax(this.props.friend.id)
+        .then(data => this.setState({ isOnline: data }));
+    }
+  }
+
+  componentWillUnmount() {
+    console.log('Friend is about to unmount');
+  }
+
   render() {
-    console.log('render of Friend runs!');
+    /*
+    WHAT CAN YOU GENERALY DO INSIDE THE RENDER METHOD:
+    Return JSX
+    It is meant to be a pure function = have no side effect
+
+    DON'T DO:
+    setState!!! = INFINITE LOOP - setState calls render method and render method will update state
+    Dont create side-effects
+
+    */
+    console.log('Render run');
 
     const { isOnline } = this.state;
     const { friend } = this.props;
